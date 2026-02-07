@@ -157,7 +157,7 @@ export default function WorkersListPage() {
                     <td className="px-6 py-4">
                       <Link 
                         href={`/hub/workers/${worker.id}`} 
-                        className="font-bold text-slate-800 hover:text-blue-600 hover:underline text-base mb-1 block transition-colors"
+                        className="font-bold text-slate-800 hover:text-blue-600 hover:underline text-base mb-1 block transition-colors cursor-pointer"
                       >
                         {worker.name}
                       </Link>
