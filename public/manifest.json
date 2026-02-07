@@ -2,7 +2,7 @@
   "name": "G2A - Gestão de Audiologia",
   "short_name": "G2A",
   "description": "Sistema de Gestão para Fonoaudiologia Ocupacional",
-  "start_url": "/dashboard",
+  "start_url": "/login",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
