@@ -18,10 +18,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+// --- CONFIGURAÇÃO CRÍTICA PARA VERCEL ---
+// Isso obriga o Next.js a renderizar esta página no servidor a cada requisição,
+// corrigindo o erro 404 em rotas dinâmicas [id] que não foram geradas no build.
+export const dynamic = "force-dynamic";
+
 // --- COMPONENTES DAS ABAS ---
 
 const TabOverview = ({ worker }: any) => (
   <div className="space-y-6 animate-in fade-in duration-300">
+    {/* Cartão de Dados Pessoais */}
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
       <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
         <User size={18} className="text-blue-600" />
@@ -32,7 +38,10 @@ const TabOverview = ({ worker }: any) => (
           <label className="text-xs font-bold text-slate-400 uppercase">CPF</label>
           <p className="text-slate-700 font-medium">{worker.cpf}</p>
         </div>
-        
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase">RG</label>
+          <p className="text-slate-700 font-medium">{worker.rg || "---"}</p>
+        </div>
         <div>
           <label className="text-xs font-bold text-slate-400 uppercase">Nascimento</label>
           <p className="text-slate-700 font-medium">
@@ -57,6 +66,7 @@ const TabOverview = ({ worker }: any) => (
       </div>
     </div>
 
+    {/* Cartão de Endereço */}
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
       <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
         <MapPin size={18} className="text-blue-600" />
@@ -91,6 +101,14 @@ const TabEvolution = ({ worker }: any) => (
         </p>
         <h4 className="font-bold text-slate-700">Cadastro Realizado</h4>
         <p className="text-slate-500 text-sm">Funcionário admitido no sistema.</p>
+      </div>
+      
+      {/* Exemplo de item futuro */}
+      <div className="relative pl-8 opacity-50">
+        <div className="absolute -left-[9px] top-0 w-4 h-4 bg-slate-100 border-2 border-slate-300 rounded-full"></div>
+        <p className="text-sm text-slate-400 mb-1">Futuro</p>
+        <h4 className="font-bold text-slate-600">Próximos Exames</h4>
+        <p className="text-slate-500 text-sm">O histórico aparecerá aqui.</p>
       </div>
     </div>
   </div>
@@ -130,6 +148,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
   const resolvedParams = use(params); // Resolve a Promise do params (Next.js 15 safe)
   const router = useRouter();
   const supabase = createClient();
+  
   const [activeTab, setActiveTab] = useState("overview");
   const [worker, setWorker] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -168,14 +187,14 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
           toast.warning("Carregado parcialmente (Erro de relação no Banco).");
         } else {
           toast.error("Funcionário não encontrado.");
-          router.push("/hub/workers");
+          // router.push("/hub/workers"); // Descomente para redirecionar em caso de erro
         }
       } finally {
         setLoading(false);
       }
     }
     fetchWorker();
-  }, [resolvedParams.id, router]);
+  }, [resolvedParams.id]);
 
   if (loading) {
     return (
@@ -186,7 +205,16 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
     );
   }
 
-  if (!worker) return null;
+  if (!worker) {
+    return (
+      <div className="p-12 text-center h-[50vh] flex flex-col items-center justify-center">
+        <h2 className="text-xl font-bold text-slate-800 mb-2">Funcionário não encontrado</h2>
+        <button onClick={() => router.back()} className="text-blue-600 hover:underline">
+          Voltar para a lista
+        </button>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: "overview", label: "Visão Geral", icon: User },
@@ -198,6 +226,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
   return (
     <div className="max-w-7xl mx-auto p-6 pb-24">
       
+      {/* Botão Voltar */}
       <button 
         onClick={() => router.back()} 
         className="flex items-center gap-2 text-slate-500 hover:text-blue-600 mb-6 font-medium transition-colors"
@@ -205,6 +234,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
         <ArrowLeft size={18} /> Voltar
       </button>
 
+      {/* CABEÇALHO DO FUNCIONÁRIO */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-8 flex flex-col md:flex-row md:items-center gap-6">
         <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-500 uppercase border-2 border-white shadow-md">
           {worker.name ? worker.name.substring(0, 2) : "??"}
@@ -232,6 +262,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
           </div>
         </div>
         
+        {/* Alerta Rápido */}
         <div className="bg-orange-50 px-4 py-3 rounded-lg border border-orange-100 flex items-start gap-3 md:max-w-xs">
           <AlertCircle className="text-orange-500 shrink-0 mt-0.5" size={18} />
           <div>
@@ -242,6 +273,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* MENU LATERAL */}
         <div className="lg:col-span-1">
           <nav className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden sticky top-6">
             <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-700 text-sm">
@@ -270,6 +302,7 @@ export default function WorkerProfilePage({ params }: { params: Promise<{ id: st
           </nav>
         </div>
 
+        {/* CONTEÚDO PRINCIPAL */}
         <div className="lg:col-span-3">
           {activeTab === "overview" && <TabOverview worker={worker} />}
           {activeTab === "evolution" && <TabEvolution worker={worker} />}
